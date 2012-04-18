@@ -1,0 +1,4 @@
+# Ignore netbeans metadata
+/nbproject/
+# Ignore the HCRHS config file
+config/config.php
