@@ -1,4 +1,7 @@
 # Ignore netbeans metadata
 /nbproject/
-# Ignore the HCRHS config file
+# Ignore the following HCRHS config files
 config/config.php
+config/log4php.config.xml
+# Ignore the HCRHS LDAP config file
+plugins/Authentication/Ldap/Ldap.config.php
