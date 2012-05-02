@@ -18,6 +18,10 @@ You should have received a copy of the GNU General Public License
 along with phpScheduleIt.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+require_once(ROOT_DIR . 'lib/Config/namespace.php');
+
+
+
 
 class Pages {
     const DEFAULT_HOMEPAGE_ID = 1;
@@ -40,6 +44,7 @@ class Pages {
     const RESERVATION = 'reservation.php';
     const REGISTRATION = 'register.php';
     const SCHEDULE = 'schedule.php';
+    const SSO = 'sso_index.php';
 
     private static $_pages = array(
         1 => array('url' => Pages::DASHBOARD, 'name' => 'MyDashboard'),
