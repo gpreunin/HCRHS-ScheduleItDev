@@ -5,3 +5,5 @@ config/config.php
 config/log4php.config.xml
 # Ignore the HCRHS LDAP config file
 plugins/Authentication/Ldap/Ldap.config.php
+# Ignore the HCRHS SAML config file
+plugins/Authentication/Saml/Saml.config.php

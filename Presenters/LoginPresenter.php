@@ -50,7 +50,18 @@ class LoginPresenter
     {
         if (is_null($authentication))
         {
-            $this->authentication = PluginManager::Instance()->LoadAuthentication();
+            $this->authentication = 
+            PluginManager::Instance()->LoadAuthentication();
+            $pluginName =
+            Configuration::Instance()->GetSectionKey(ConfigSection::PLUGINS, 
+                    ConfigKeys:: PLUGIN_AUTHENTICATION);
+            if ($pluginName == "Saml") 
+            {
+                $this->_page->Set('SAMLphpLogin',true);
+            }
+            else{
+                $this->_page->Set('SAMLphpLogin',false);
+            }
         } else
         {
             $this->authentication = $authentication;

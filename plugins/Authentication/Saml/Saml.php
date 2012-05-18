@@ -1,8 +1,12 @@
 <?php
 /**
-Copyright 2011-2012 Nick Korbel
-
-This file is part of phpScheduleIt.
+File in Authentication plugin package for ver 2.1.4 phpScheduleIt 
+to implement Single Sign On Capability.  Based on code from the
+phpScheduleIt Authentication Ldap plugin as well as a SAML
+Authentication plugin for Moodle 1.9+.
+See http://moodle.org/mod/data/view.php?d=13&rid=2574
+This plugin uses the SimpleSAMLPHP version 1.8.2 libraries.
+http://simplesamlphp.org/
 
 phpScheduleIt is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -56,6 +60,12 @@ class Saml implements IAuthentication
 	 * @var SamlUser
 	 */
 	private $user;
+        
+        /** 
+         * @var string
+         * 
+         */
+        private $username;
 
 	/**
 	 * @var string
@@ -96,7 +106,7 @@ class Saml implements IAuthentication
 	/**
 	 * @param IAuthentication $authentication Authentication class to decorate
 	 * @param ISaml $samlImplementation The actual SAML implementation to work against
-	 * @param SamlOptions $samlOptions Options to use for LDAP configuration
+	 * @param SamlOptions $samlOptions Options to use for SAML configuration
 	 */
 	public function __construct(IAuthentication $authentication, $samlImplementation = null, $samlOptions = null)
 	{
@@ -115,55 +125,45 @@ class Saml implements IAuthentication
 		}
 	}
 
-	public function Validate($username, $password)
+	public function Validate($username = null, $password = null)
 	{
-		$this->password = $password;
+           
+          $this->saml->Connect();   
+          $isValid = $this->saml->Authenticate();
 
-		$connected = $this->saml->Connect();
-
-        if (!$connected)
-        {
-            throw new Exception("Could not connect to LDAP server. Please check your LDAP configuration settings");
-        }
-
-        $isValid = $this->saml->Authenticate($username, $password);
-        Log::Debug("Result of LDAP Authenticate for user %s: %d", $username, $isValid);
-
-        if ($isValid)
-        {
-            $this->user = $this->saml->GetSamlUser($username);
+          if ($isValid)
+          {        
+            $this->user = $this->saml->GetSamlUser();
             $userLoaded = $this->SamlUserExists();
 
             if (!$userLoaded)
             {
-                Log::Error("Could not load user details from LDAP. Check your basedn setting. User: %s", $username);
+                Log::Error('Could not load user details from SinmpleSamlPhpSSO. Check your SSO settings. User: %s', $username);
             }
             return $userLoaded;
-        }
-        else
-        {
-            if ($this->options->RetryAgainstDatabase())
-            {
-                return $this->authToDecorate->Validate($username, $password);
-            }
-        }
+          }
 
-		return false;
+          return false;
 	}
 
-	public function Login($username, $loginContext)
+	public function Login($username = null, $loginContext)
 	{
-		if ($this->SamlUserExists())
-		{
-			$this->Synchronize($username);
-		}
+           $this->username = $username;       		
+           if ($this->username == null)
+	   {
+	     $this->username = $this->user->GetUserName();
+	   }
+	   if ($this->SamlUserExists())
+           {
+	     $this->Synchronize($this->username);
+	   }
 
-		$this->authToDecorate->Login($username, $loginContext);
+	   $this->authToDecorate->Login($this->username, $loginContext);
 	}
 
 	public function Logout(UserSession $user)
 	{
-		$this->authToDecorate->Logout($user);
+	   $this->authToDecorate->Logout($user);
 	}
 
 	public function CookieLogin($cookieValue, $loginContext)
